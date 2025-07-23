@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crime Rate Prediction Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .tab-container {
+            background-color: #fff;
+            display: flex;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: rgba(106, 17, 203, 0.05);
+        }
+
+        .tab:hover:not(.active) {
+            background-color: #f5f5f5;
+            border-bottom-color: #ddd;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+            outline: none;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-row .input-group {
+            flex: 1 1 calc(50% - 20px);
+            min-width: 250px;
+        }
+
+        button {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px dashed #e1e1e1;
+            text-align: center;
+            display: none;
+        }
+
+        .result-container.active {
+            display: block;
+            animation: pulse 1.5s ease;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(106, 17, 203, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 15px rgba(106, 17, 203, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(106, 17, 203, 0);
+            }
+        }
+
+        .result-container h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .low {
+            background-color: rgba(40, 167, 69, 0.15);
+            color: var(--success);
+        }
+
+        .medium {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: var(--warning);
+        }
+
+        .high {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: var(--danger);
+        }
+
+        .gauge-container {
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            position: relative;
+            height: 150px;
+            overflow: hidden;
+        }
+
+        .gauge {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            border-top-left-radius: 200px;
+            border-top-right-radius: 200px;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .gauge-value {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(to right, #28a745, #ffc107, #dc3545);
+            transition: height 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .gauge-marker {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        .gauge-circle {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white;
+            border: 3px solid var(--primary);
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .loading.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .info-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background-color: var(--info);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            cursor: help;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Hero section at the bottom */
+        .hero-section {
+            margin-top: 40px;
+            background: linear-gradient(to right, rgba(106, 17, 203, 0.05), rgba(37, 117, 252, 0.05));
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .hero-section h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .hero-section p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .feature {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            width: calc(33.333% - 20px);
+            min-width: 200px;
+            flex: 1;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .feature p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 10px;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .input-row .input-group {
+                flex: 1 1 100%;
+            }
+
+            .feature {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Smart Crime Rate Predictor</h1>
+            <p>Advanced analytics for community safety planning</p>
+        </header>
+
+        <div class="tab-container">
+            <div class="tab active" data-tab="crime">Crime Rate Prediction</div>
+            <div class="tab" data-tab="house">House Price Prediction</div>
+        </div>
+
+        <div class="content">
+            <div class="form-section active" id="crime-form">
+                <form id="crime-prediction-form">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="population">
+                                Population
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Total number of residents in the area</span>
+                                </div>
+                            </label>
+                            <input type="number" id="population" name="Population" placeholder="e.g. 50000" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="household-size">
+                                Household Size
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Average number of people living together</span>
+                                </div>
+                            </label>
+                            <input type="number" id="household-size" name="Household Size" placeholder="e.g. 2.5"
+                                step="0.1" required>
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="race-black">
+                                Race Percentage (Black)
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Percentage of Black population</span>
+                                </div>
+                            </label>
+                            <input type="number" id="race-black" name="Race Percentage (Black)" placeholder="e.g. 15"
+                                min="0" max="100" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="race-white">
+                                Race Percentage (White)
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Percentage of White population</span>
+                                </div>
+                            </label>
+                            <input type="number" id="race-white" name="Race Percentage (White)" placeholder="e.g. 65"
+                                min="0" max="100" required>
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="race-asian">
+                                Race Percentage (Asian)
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Percentage of Asian population</span>
+                                </div>
+                            </label>
+                            <input type="number" id="race-asian" name="Race Percentage (Asian)" placeholder="e.g. 12"
+                                min="0" max="100" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="median-income">
+                                Median Income
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Average annual income per household in USD</span>
+                                </div>
+                            </label>
+                            <input type="number" id="median-income" name="Median Income" placeholder="e.g. 45000"
+                                required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="predict-crime-btn">
+                        <i class="fas fa-chart-line"></i> Predict Crime Rate
+                    </button>
+                </form>
+
+                <div class="result-container" id="crime-result">
+                    <h3>Predicted Crime Rate</h3>
+                    <div class="gauge-container">
+                        <div class="gauge">
+                            <div class="gauge-value" id="crime-gauge"></div>
+                            <div class="gauge-marker"></div>
+                        </div>
+                        <div class="gauge-circle" id="crime-percentage">0%</div>
+                    </div>
+                    <div class="result-value" id="crime-rate">0.00</div>
+                    <div class="result-badge" id="crime-badge">Calculating...</div>
+                    <p>Crimes per 100,000 population</p>
+                </div>
+
+                <div class="hero-section">
+                    <h2>How It Works</h2>
+                    <p>Our AI-powered crime prediction tool uses advanced machine learning to analyze demographic,
+                        economic, and social factors to forecast potential crime rates in a given area.</p>
+
+                    <div class="features">
+                        <div class="feature">
+                            <i class="fas fa-brain"></i>
+                            <h3>AI-Powered Analytics</h3>
+                            <p>Uses advanced Random Forest algorithm to make accurate predictions</p>
+                        </div>
+
+                        <div class="feature">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Community Planning</h3>
+                            <p>Help allocate resources effectively for safer neighborhoods</p>
+                        </div>
+
+                        <div class="feature">
+                            <i class="fas fa-chart-bar"></i>
+                            <h3>Data-Driven Insights</h3>
+                            <p>Based on comprehensive demographic and socioeconomic factors</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section" id="house-form">
+                <form id="house-price-prediction-form">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="area">
+                                Area (sq.ft)
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Total area of the property in square feet</span>
+                                </div>
+                            </label>
+                            <input type="number" id="area" name="area" placeholder="e.g. 1500" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="bedrooms">
+                                Bedrooms
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Number of bedrooms in the property</span>
+                                </div>
+                            </label>
+                            <input type="number" id="bedrooms" name="bedrooms" placeholder="e.g. 3" min="1" required>
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="bathrooms">
+                                Bathrooms
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Number of bathrooms in the property</span>
+                                </div>
+                            </label>
+                            <input type="number" id="bathrooms" name="bathrooms" placeholder="e.g. 2" min="1" step="0.5"
+                                required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="location">
+                                Location
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <span class="tooltiptext">Area/neighborhood of the property</span>
+                                </div>
+                            </label>
+                            <input type="text" id="location" name="location" placeholder="e.g. Central Chennai"
+                                required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="predict-house-btn">
+                        <i class="fas fa-home"></i> Predict House Price
+                    </button>
+                </form>
+
+                <div class="result-container" id="house-result">
+                    <h3>Estimated House Price</h3>
+                    <div class="result-value" id="house-price">₹0</div>
+                    <p>Based on current market trends and property details</p>
+                </div>
+
+                <div class="hero-section">
+                    <h2>Real Estate Insights</h2>
+                    <p>Our house price prediction tool uses up-to-date data and machine learning to provide accurate
+                        property valuations across Chennai.</p>
+
+                    <div class="features">
+                        <div class="feature">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <h3>Location Analysis</h3>
+                            <p>Considers neighborhood value and proximity to amenities</p>
+                        </div>
+
+                        <div class="feature">
+                            <i class="fas fa-rupee-sign"></i>
+                            <h3>Market Trends</h3>
+                            <p>Incorporates latest real estate market dynamics</p>
+                        </div>
+
+                        <div class="feature">
+                            <i class="fas fa-building"></i>
+                            <h3>Property Evaluation</h3>
+                            <p>Analyzes property features for comprehensive valuation</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+
+                // Update active tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update active form
+                document.querySelectorAll('.form-section').forEach(form => form.classList.remove('active'));
+
+                if (targetTab === 'crime') {
+                    document.getElementById('crime-form').classList.add('active');
+                } else if (targetTab === 'house') {
+                    document.getElementById('house-form').classList.add('active');
+                }
+            });
+        });
+
+        // Crime prediction form submission
+        document.getElementById('crime-prediction-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Show loading overlay
+            document.getElementById('loading-overlay').classList.add('active');
+
+            // Simulate API call (replace with actual AJAX call)
+            setTimeout(() => {
+                // Hide loading overlay
+                document.getElementById('loading-overlay').classList.remove('active');
+
+                // Get form data
+                const formData = new FormData(e.target);
+
+                // In a real application, you would send this data to your server
+                console.log('Crime prediction form submitted with data:', Object.fromEntries(formData));
+
+                // Generate a realistic prediction (replace with actual response in production)
+                const randomValue = Math.random() * 10 + 2; // Random value between 2 and 12
+                const crimeRate = randomValue.toFixed(2);
+                const percentage = Math.min(100, randomValue * 10); // Scale for gauge display
+
+                // Update result display
+                document.getElementById('crime-rate').textContent = crimeRate;
+                document.getElementById('crime-percentage').textContent = `${Math.round(percentage)}%`;
+                document.getElementById('crime-gauge').style.height = `${percentage}%`;
+
+                // Set risk level badge
+                const badge = document.getElementById('crime-badge');
+                if (randomValue < 5) {
+                    badge.textContent = 'Low Risk';
+                    badge.className = 'result-badge low';
+                } else if (randomValue < 8) {
+                    badge.textContent = 'Medium Risk';
+                    badge.className = 'result-badge medium';
+                } else {
+                    badge.textContent = 'High Risk';
+                    badge.className = 'result-badge high';
+                }
+
+                // Show result container
+                document.getElementById('crime-result').classList.add('active');
+
+                // Scroll to result
+                document.getElementById('crime-result').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 1500); // Simulate API delay
+        });
+
+        // House price prediction form submission
+        document.getElementById('house-price-prediction-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Show loading overlay
+            document.getElementById('loading-overlay').classList.add('active');
+
+            // Simulate API call (replace with actual AJAX call)
+            setTimeout(() => {
+                // Hide loading overlay
+                document.getElementById('loading-overlay').classList.remove('active');
+
+                // Get form data
+                const formData = new FormData(e.target);
+
+                // In a real application, you would send this data to your server
+                console.log('House price prediction form submitted with data:', Object.fromEntries(formData));
+
+                // Generate a realistic price (replace with actual response in production)
+                const area = parseFloat(formData.get('area'));
+                const bedrooms = parseInt(formData.get('bedrooms'));
+                const basePrice = 1500; // Base price per sq.ft
+
+                // Simple formula for demonstration
+                const estimatedPrice = area * basePrice * (1 + (bedrooms * 0.1));
+
+                // Format as Indian currency with lakhs and crores
+                function formatIndianPrice(price) {
+                    if (price >= 10000000) {
+                        return `₹${(price / 10000000).toFixed(2)} Cr`;
+                    } else if (price >= 100000) {
+                        return `₹${(price / 100000).toFixed(2)} Lac`;
+                    } else {
+                        return `₹${price.toLocaleString('en-IN')}`;
+                    }
+                }
+
+                // Update result display
+                document.getElementById('house-price').textContent = formatIndianPrice(estimatedPrice);
+
+                // Show result container
+                document.getElementById('house-result').classList.add('active');
+
+                // Scroll to result
+                document.getElementById('house-result').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 1500); // Simulate API delay
+        });
+    </script>
+</body>
+
+</html>
